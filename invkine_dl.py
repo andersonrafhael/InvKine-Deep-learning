@@ -129,7 +129,7 @@ angle_ranges
 """### Generate Dataset with N samples randomly"""
 
 # n samples
-N = 100
+N = 50
 
 thetas1 = np.linspace(angle_ranges[0, 0], angle_ranges[0, 1], N)
 thetas2 = np.linspace(angle_ranges[1, 0], angle_ranges[1, 1], N)
@@ -150,7 +150,7 @@ pprint(positions.shape)
 plt.figure(figsize=(16, 8))
 plt.scatter(positions[:, 0], positions[:, 1], label='nuvem de pontos')
 plt.savefig('nuvem_de_pontos.png')
-plt.show()
+# plt.show()
 
 """### Data split"""
 
@@ -177,8 +177,8 @@ plt.show()
 def build_model(input_dim, output_dim):
 
     model = Sequential()
-    model.add(Dense(units=10, activation='relu', input_dim=input_dim))
-    model.add(Dense(units=20, activation='relu'))
+    model.add(Dense(units=32, activation='relu', input_dim=input_dim))
+    model.add(Dense(units=64, activation='relu'))
     model.add(Dense(units=output_dim))
 
     return model
@@ -193,11 +193,11 @@ model_params = {
 model = build_model(positions.shape[1], thetas.shape[1])
 model.summary()
 
-opt = tf.keras.optimizers.Adam(learning_rate=0.001)
+opt = tf.keras.optimizers.Adam(learning_rate=0.005)
 
 # monitoring loss with ealty stop
 early_stop = tf.keras.callbacks.EarlyStopping(
-    monitor='loss', patience=10, min_delta=0.0001)
+    monitor='loss', patience=20, min_delta=0.0001)
 
 model.compile(
     optimizer=opt,
@@ -239,5 +239,30 @@ pred_position = get_position(y_hat)
 
 print(f"Position given by theta label {true_position}")
 print(f"Position given by theta pred  {pred_position}")
+
+
+def plot_arm(theta, theta_hat):
+    # get the position of the end effector
+    position = get_position(theta)
+    position_hat = get_position(theta_hat)
+
+    # plot the arm
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_xlim(-10, 10)
+    ax.set_ylim(-10, 10)
+    ax.set_zlim(-10, 10)
+    ax.scatter(position[0], position[1], position[2], c='r', marker='o')
+    ax.scatter(position_hat[0], position_hat[1],
+               position_hat[2], c='b', marker='o')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.savefig('arm.png')
+    plt.show()
+
+
+# plot the arm in the original position
+plot_arm(y_test[0], y_hat)
 
 """#Testando algumas possibilidades"""
