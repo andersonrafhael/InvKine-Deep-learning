@@ -3,8 +3,8 @@ import pandas as pd
 from pprint import pprint
 
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.models import Sequential  # type: ignore
+from tensorflow.keras.layers import Dense, Dropout  # type: ignore
 
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -13,10 +13,8 @@ np.set_printoptions(precision=6, suppress=True)
 
 
 dh_table = np.array([
-
-    [0.,   0.,          1.0,      0.],
-    [0.,   0.,          0.5,      0.]
-
+    [0.,   0.,          12.0,      0.],
+    [0.,   0.,          18.0,      0.]
 ])
 
 
@@ -149,48 +147,28 @@ len(positions)
 
 pprint(positions.shape)
 
-Y_df = pd.DataFrame(thetas, columns=["t1", "t2"])
-Y_df
-
-X_df = pd.DataFrame(positions, columns=["x", "y", "z"])
-X_df
-
-_X_df = pd.DataFrame((10e3*X_df.values).astype(int), columns=["x", "y", "z"])
-_X_df
-
-df = pd.concat([_X_df, Y_df], axis=1)
-df
-
-df = df.drop_duplicates(subset=["x"], keep=False)
-
-data = df.values.astype(float)/10e3
+plt.figure(figsize=(16, 8))
+plt.scatter(positions[:, 0], positions[:, 1], label='nuvem de pontos')
+plt.savefig('nuvem_de_pontos.png')
+plt.show()
 
 """### Data split"""
 
-positions = data[:, :3]
-
-thetas = 10e3*data[:, 3:]
-
 X_train, X_test, y_train, y_test = train_test_split(
-    positions, thetas, test_size=0.10, random_state=42)
-
-[m.shape for m in [X_train, y_train, X_test, y_test]]
-
-X_train[0]
-
-y_train[0]
+    positions, thetas, test_size=0.25, random_state=42)
 
 """# Data visualization"""
 
-x, y, z = X_train[:, -3], X_train[:, -2], X_train[:, -1]
-x2, y2, z2 = X_test[:, -3], X_test[:, -2], X_test[:, -1]
+x, y = X_train[:, 0], X_train[:, 1]
+x2, y2 = X_test[:, 0], X_test[:, 1]
 
-plt.figure(figsize=(30, 8))
-plt.subplot(1, 3, 1)
+plt.figure(figsize=(16, 8))
+plt.subplot(1, 2, 1)
 plt.scatter(x, y, label='xy_train')
+plt.subplot(1, 2, 2)
 plt.scatter(x2, y2, label='xy_test')
 plt.legend()
-
+plt.savefig('xy_train_test.png')
 plt.show()
 
 """# Model Design"""
@@ -199,11 +177,8 @@ plt.show()
 def build_model(input_dim, output_dim):
 
     model = Sequential()
-    model.add(Dense(units=32, activation='relu', input_dim=input_dim))
-    model.add(Dense(units=64, activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(units=256, activation='relu'))
-    model.add(Dropout(0.4))
+    model.add(Dense(units=10, activation='relu', input_dim=input_dim))
+    model.add(Dense(units=20, activation='relu'))
     model.add(Dense(units=output_dim))
 
     return model
@@ -218,7 +193,11 @@ model_params = {
 model = build_model(positions.shape[1], thetas.shape[1])
 model.summary()
 
-opt = tf.keras.optimizers.Adam(learning_rate=0.002)
+opt = tf.keras.optimizers.Adam(learning_rate=0.001)
+
+# monitoring loss with ealty stop
+early_stop = tf.keras.callbacks.EarlyStopping(
+    monitor='loss', patience=10, min_delta=0.0001)
 
 model.compile(
     optimizer=opt,
@@ -227,7 +206,7 @@ model.compile(
 )
 
 history = model.fit(x=X_train, y=y_train, batch_size=128,
-                    epochs=100, validation_data=(X_test, y_test))
+                    epochs=5000, validation_data=(X_test, y_test), callbacks=[early_stop])
 
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
@@ -235,6 +214,17 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
+plt.savefig('loss.png')
+plt.show()
+
+# plot model error
+plt.plot(history.history['mse'])
+plt.plot(history.history['val_mse'])
+plt.title('model error')
+plt.ylabel('error')
+plt.xlabel('epoch')
+plt.legend(['train', 'validation'], loc='upper left')
+plt.savefig('error.png')
 plt.show()
 
 model.evaluate(X_test, y_test)
