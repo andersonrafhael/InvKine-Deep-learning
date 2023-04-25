@@ -106,7 +106,7 @@ def get_position(thetas: np.ndarray) -> np.ndarray:
     return xyz
 
 
-def plot_arm(thetas: np.ndarray) -> plt.figure:
+def plot_arm(thetas: np.ndarray, experiment_folder: Path, plot_id: int) -> plt.figure:
     """
     This function plots the arm for a given set of joint angles.
 
@@ -133,11 +133,13 @@ def plot_arm(thetas: np.ndarray) -> plt.figure:
     plt.xlim(-2, 2)
     plt.ylim(-2, 2)
     plt.grid()
+    
+    plt.savefig(experiment_folder / f"arm_{plot_id}.png")
 
     return fig
 
 
-def plot_train_metrics(history: tf.keras.callbacks.History) -> None:
+def plot_train_metrics(history: tf.keras.callbacks.History, experiment_folder: Path) -> None:
     """
     This function plots the loss and error of the model.
 
@@ -153,7 +155,7 @@ def plot_train_metrics(history: tf.keras.callbacks.History) -> None:
     plt.ylabel("loss")
     plt.xlabel("epoch")
     plt.legend(["train", "validation"], loc="upper left")
-    plt.savefig(Path("plots") / "loss.png")
+    plt.savefig(experiment_folder / "loss.png")
     plt.close()
     # plt.show()
 
@@ -164,11 +166,11 @@ def plot_train_metrics(history: tf.keras.callbacks.History) -> None:
     plt.ylabel("error")
     plt.xlabel("epoch")
     plt.legend(["train", "validation"], loc="upper left")
-    plt.savefig(Path("plots") / "error.png")
+    plt.savefig(experiment_folder / "error.png")
     plt.close()
 
 
-def get_experiment_id() -> Path:
+def get_experiment_id() -> int:
     """
     This function returns the path of the next experiment to be saved.
 
@@ -180,17 +182,19 @@ def get_experiment_id() -> Path:
             path of the next experiment to be saved
 
     """
-    i = 0
-    while True:
-        ith_experiment_path = Path("experiments") / f"experiment_{i}.json"
-        if not ith_experiment_path.exists():
-            break
-        i += 1
+    experiment_id_path = Path("run_id.json")
+    
+    if experiment_id_path.exists():
+        current_id = json.load(open(experiment_id_path))["current_id"]
+    else:
+        current_id = 0
+        
+    with open(experiment_id_path, "w") as f:
+        json.dump({"current_id": current_id+1}, f, indent=4)
+        
+    return current_id
 
-    return Path("experiments") / f"experiment_{i}.json"
-
-
-def build_model(net_config: dict, experiment_config: dict) -> tf.keras.Sequential:
+def build_model(net_config: dict, experiment_config: dict, experiment_folder:str) -> tf.keras.Sequential:
     """
     This function builds the model based on the network configuration and saves the experiment configuration.
 
@@ -223,13 +227,14 @@ def build_model(net_config: dict, experiment_config: dict) -> tf.keras.Sequentia
 
     model.summary()
 
-    with open(get_experiment_id(), "w") as f:
+    with open(experiment_folder / "network_config", "w") as f:
         json.dump(experiment_config, f, indent=4)
 
     return model
 
 
 if __name__ == "__main__":
+    
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--hidden-layers-config",
@@ -254,9 +259,10 @@ if __name__ == "__main__":
         help="number of samples to generate the dataset",
     )
     args = parser.parse_args()
-
-    Path("plots").mkdir(parents=True, exist_ok=True)
-    Path("experiments").mkdir(parents=True, exist_ok=True)
+    
+    experiment_id = get_experiment_id()
+    experiment_folder = Path(f"runs/exp{experiment_id}")
+    experiment_folder.mkdir(parents=True, exist_ok=True)
 
     experiment_config = {
         "training_config": {
@@ -279,13 +285,13 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(10, 8))
     plt.scatter(positions[:, 0], positions[:, 1], label="nuvem de pontos")
-    plt.savefig(Path("plots") / "nuvem_de_pontos.png")
+    plt.savefig(experiment_folder / "nuvem_de_pontos.png")
     plt.close()
 
     """### Data split"""
 
     X_train, X_test, y_train, y_test = train_test_split(
-        positions, thetas, test_size=0.25, random_state=42
+        positions, thetas, test_size=0.2, random_state=42
     )
 
     """# Data visualization"""
@@ -296,19 +302,19 @@ if __name__ == "__main__":
     plt.subplot(1, 2, 2)
     plt.scatter(X_test[:, 0], X_test[:, 1], label="xy_test")
     plt.legend()
-    plt.savefig(Path("plots") / "xy_train_test.png")
+    plt.savefig(experiment_folder / "xy_train_test.png")
     plt.close()
 
     input_dim, output_dim = positions.shape[1], thetas.shape[1]
     # [input_shape, units_input_layer, units_2th_layer, ..., units_output_layer]
     net_config = [input_dim] + args.hidden_layers_config + [output_dim]
 
-    model = build_model(net_config, experiment_config)
-    model_params = {"optimizer": "adam", "loss": "mse", "metrics": ["mse"]}
+    model = build_model(net_config, experiment_config, experiment_folder)
+    model_params = {"optimizer": "adam", "loss": "mse", "metrics": ["mse", "mae"]}
     opt = tf.keras.optimizers.Adam(learning_rate=args.lrate)
 
     early_stop = tf.keras.callbacks.EarlyStopping(
-        monitor="loss", patience=4, min_delta=0.0001
+        monitor="loss", patience=10, min_delta=0.0001
     )
 
     model.compile(
@@ -324,7 +330,7 @@ if __name__ == "__main__":
         callbacks=[early_stop],
     )
 
-    plot_train_metrics(history)
+    plot_train_metrics(history, experiment_folder)
 
     model.evaluate(X_test, y_test)
 
@@ -341,8 +347,10 @@ if __name__ == "__main__":
     print(f"Position given by theta label {test_pos}")
     print(f"Position given by theta pred  {pred_position}")
 
-    fig1 = plot_arm(test_theta)
+    fig1 = plot_arm(test_theta, experiment_folder, 0)
     plt.title("Desired arm position")
-    fig2 = plot_arm(y_hat)
+    fig2 = plot_arm(y_hat, experiment_folder, 1)
     plt.title("Predicted arm position")
     # plt.show()
+    
+    model.save(experiment_folder / "model.h5")
