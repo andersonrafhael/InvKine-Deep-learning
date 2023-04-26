@@ -1,0 +1,157 @@
+#VRML_SIM R2023a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/Floor.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.09667227224551193 0.9138493667746839 0.39437774610695125 0.5241606940625919
+  position -0.5944976966980444 -0.2670915102932561 0.7908165819209596
+}
+Background {
+  skyColor [
+    1 0.988235 0.992157
+  ]
+}
+DirectionalLight {
+}
+Floor {
+}
+Robot {
+  translation 0 0 0.5
+  rotation 0 1 0 0
+  children [
+    DEF BODY_GEO Shape {
+      appearance PBRAppearance {
+        baseColor 1 0.682353 0.0470588
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.3 0.1 0.1
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 0 -1
+        anchor 0 -0.05 0
+      }
+      device [
+        RotationalMotor {
+          name "joint1"
+          minPosition -1.5708
+          maxPosition 1.5708
+        }
+      ]
+      endPoint DEF JOINT1 Solid {
+        translation 0 -0.05 0
+        rotation 1 -1.0633757524028823e-09 -4.926279041475216e-14 3.1415
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 1 0 0
+              roughness 1
+              metalness 0
+            }
+            geometry DEF LINK1_GEO Cylinder {
+              height 0.05
+              radius 0.02
+            }
+          }
+          HingeJoint {
+            jointParameters HingeJointParameters {
+            }
+            device [
+              RotationalMotor {
+                name "joint2"
+                minPosition -1.5708
+                maxPosition 1.5708
+              }
+            ]
+            endPoint Solid {
+              translation 0 0.07499999999999962 0
+              rotation 1 0 0 1.570799999999974
+              children [
+                Shape {
+                  appearance PBRAppearance {
+                    baseColor 1 0 0
+                    roughness 1
+                    metalness 0
+                  }
+                  geometry DEF LINK2_GEO Cylinder {
+                    height 0.15
+                    radius 0.015
+                  }
+                }
+                HingeJoint {
+                  jointParameters HingeJointParameters {
+                    anchor 0 0 -0.075
+                  }
+                  device [
+                    RotationalMotor {
+                      name "joint3"
+                      minPosition -1.5708
+                      maxPosition 1.5708
+                    }
+                  ]
+                  endPoint Solid {
+                    translation 0 0.075 -0.075
+                    rotation 1 0 0 1.5708
+                    children [
+                      Shape {
+                        appearance PBRAppearance {
+                          baseColor 0 0 0.498039
+                          roughness 1
+                          metalness 0
+                        }
+                        geometry DEF LINK3_GEO Capsule {
+                          height 0.15
+                          radius 0.015
+                        }
+                      }
+                    ]
+                    boundingObject USE LINK3_GEO
+                    physics Physics {
+                    }
+                  }
+                }
+              ]
+              name "link2"
+              boundingObject DEF LINK2_GEO Cylinder {
+                height 0.15
+                radius 0.015
+              }
+              physics Physics {
+              }
+            }
+          }
+        ]
+        name "link1"
+        boundingObject USE LINK1_GEO
+        physics Physics {
+        }
+      }
+    }
+  ]
+  name "KinLeg"
+  boundingObject USE BODY_GEO
+  controller "kin_leg_controller"
+  supervisor TRUE
+}
+DEF BALL Solid {
+  translation 0 -0.25 0.45
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 1
+        metalness 0
+      }
+      geometry Sphere {
+        radius 0.02
+        subdivision 3
+      }
+    }
+  ]
+  name "target"
+}
