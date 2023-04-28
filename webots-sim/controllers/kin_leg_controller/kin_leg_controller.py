@@ -4,7 +4,7 @@
 #  from controller import Robot, Motor, DistanceSensor
 import numpy as np
 from controller import Supervisor  # type: ignore
-
+from tensorflow.keras.models import load_model
 
 L1 = 0.15
 L2 = 0.15
@@ -33,16 +33,22 @@ class KinLeg:
             self.joints[i].setPosition(q[i])
         self.delay(50)
 
-    def invkine(self, x, y, z) -> list[float]:
+    def invkine(self, model, x, y, z) -> list[float]:
         # params: x, y, z (target position)
         # returns: [q1, q2, q3] (joint angles)
-        L = np.sqrt(x*x + y*y + z*z)
-        L1L = (L1*L1 + L*L - L2*L2) / (2*L1*L)
-        L1L2 = (L1*L1 + L2*L2 - L*L) / (2*L1*L2)
+        # L = np.sqrt(x*x + y*y + z*z)
+        # L1L = (L1*L1 + L*L - L2*L2) / (2*L1*L)
+        # L1L2 = (L1*L1 + L2*L2 - L*L) / (2*L1*L2)
+        
+        thetas = model.predict(np.array([[x, y, z]]), verbose=0)[0]
+        
         return np.array([
-            -np.arctan2(x, y),
-            0.5*np.pi - np.arccos(L1L) - np.arctan2(np.sqrt(x*x + y*y), z),
-            0.5*np.pi - np.arccos(L1L2)
+            0,
+            # -np.arctan2(x, y),
+            # 0.5*np.pi - np.arccos(L1L) - np.arctan2(np.sqrt(x*x + y*y), z),
+            # 0.5*np.pi - np.arccos(L1L2),
+            thetas[0],
+            thetas[1]
         ])
 
     def step(self):
@@ -55,7 +61,8 @@ def ball_position(ball_pos):
 
 
 if __name__ == "__main__":
-
+    
+    model = load_model("/home/andre-ubuntu/dev/InvKine-Deep-learning/output/model.tflite")
     kin_leg = KinLeg()
 
     ball = kin_leg.robot.getFromDef("BALL")
@@ -71,6 +78,7 @@ if __name__ == "__main__":
         ).reshape(4, 1)
         ball_pos = ball_position(ball_pos)
 
-        q = kin_leg.invkine(*ball_pos[:-1])
+        q = kin_leg.invkine(model, *ball_pos[:-1])
+        print(q)
 
         kin_leg.setJoints(q)

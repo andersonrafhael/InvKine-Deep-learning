@@ -6,7 +6,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.09667227224551193 0.9138493667746839 0.39437774610695125 0.5241606940625919
-  position -0.5944976966980444 -0.2670915102932561 0.7908165819209596
+  position -1.4226467340486937 -0.4442985010784768 1.2325805151799436
 }
 Background {
   skyColor [
@@ -33,6 +33,7 @@ Robot {
     }
     HingeJoint {
       jointParameters HingeJointParameters {
+        position 4.1240736230700326e-07
         axis 0 0 -1
         anchor 0 -0.05 0
       }
@@ -45,7 +46,7 @@ Robot {
       ]
       endPoint DEF JOINT1 Solid {
         translation 0 -0.05 0
-        rotation 1 -1.0633757524028823e-09 -4.926279041475216e-14 3.1415
+        rotation 0.9999999999999787 -2.0726705690590305e-07 -9.602018440956093e-12 3.1415
         children [
           Shape {
             appearance PBRAppearance {
@@ -60,6 +61,7 @@ Robot {
           }
           HingeJoint {
             jointParameters HingeJointParameters {
+              position 2.548410069636611e-07
             }
             device [
               RotationalMotor {
@@ -69,8 +71,8 @@ Robot {
               }
             ]
             endPoint Solid {
-              translation 0 0.07499999999999962 0
-              rotation 1 0 0 1.570799999999974
+              translation 0 0.0749999999999972 1.911307552227428e-08
+              rotation -1 4.9624424136713204e-14 1.1156566611707874e-13 -1.5708002548409805
               children [
                 Shape {
                   appearance PBRAppearance {
@@ -85,6 +87,7 @@ Robot {
                 }
                 HingeJoint {
                   jointParameters HingeJointParameters {
+                    position 7.808111178846011e-12
                     anchor 0 0 -0.075
                   }
                   device [
@@ -95,8 +98,8 @@ Robot {
                     }
                   ]
                   endPoint Solid {
-                    translation 0 0.075 -0.075
-                    rotation 1 0 0 1.5708
+                    translation 0 0.075 -0.07499999999941438
+                    rotation 1 -3.1273011935775813e-14 -3.066790376226516e-14 1.5708000000078084
                     children [
                       Shape {
                         appearance PBRAppearance {
@@ -113,6 +116,8 @@ Robot {
                     boundingObject USE LINK3_GEO
                     physics Physics {
                     }
+                    linearVelocity -6.190676300893815e-07 2.382520673306923e-10 -7.76214579738418e-08
+                    angularVelocity 3.177879227448355e-09 -9.745768062783332e-12 -4.128275992886768e-06
                   }
                 }
               ]
@@ -123,6 +128,8 @@ Robot {
               }
               physics Physics {
               }
+              linearVelocity -3.0947193254198213e-07 -5.255204430583326e-14 -6.279374970932542e-08
+              angularVelocity 3.1778763295815403e-09 -5.874362089140043e-12 -4.128276031041814e-06
             }
           }
         ]
@@ -130,6 +137,8 @@ Robot {
         boundingObject USE LINK1_GEO
         physics Physics {
         }
+        linearVelocity 7.438263585105802e-11 -1.526952032172723e-14 -3.509246308958336e-08
+        angularVelocity 3.154101644416688e-09 -2.0038638549695708e-12 -4.128286106034693e-06
       }
     }
   ]
@@ -139,7 +148,7 @@ Robot {
   supervisor TRUE
 }
 DEF BALL Solid {
-  translation 0 -0.25 0.45
+  translation -0.153245 -0.276837 0.45
   children [
     Shape {
       appearance PBRAppearance {
