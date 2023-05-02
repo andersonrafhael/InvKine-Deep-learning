@@ -4,9 +4,8 @@ from pprint import pprint
 
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.layers import Dense
 
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from robot import RobotPuma560
 
@@ -17,12 +16,14 @@ from utils.experiments import (
     get_experiment_id,
     get_network_config,
     get_experiment_config,
+    apply_inte8_model_quantization
 )
 
 
 def build_model(
     net_config: dict, experiment_config: dict, experiment_folder: str
 ) -> tf.keras.Sequential:
+    
     """
     This function builds the model based on the network configuration and saves the experiment configuration.
 
@@ -43,7 +44,11 @@ def build_model(
     model = Sequential()
     model.add(Dense(net_config[1], activation="relu", input_dim=net_config[0]))
     experiment_config["network_config"] = {
-        "0": {"units": net_config[1], "activation": "relu", "input_shape": net_config[0]}
+        "0": {
+            "units": net_config[1],
+            "activation": "relu",
+            "input_shape": net_config[0],
+        }
     }
 
     for i, units in enumerate(net_config[2:]):
@@ -160,7 +165,6 @@ if __name__ == "__main__":
         monitor="loss", patience=10, min_delta=0.0001
     )
 
-
     history = model.fit(
         x=X_train,
         y=y_train,
@@ -186,5 +190,10 @@ if __name__ == "__main__":
 
     print(f"Position given by theta label {true_position}")
     print(f"Position given by theta pred  {pred_position}")
+
+    print(X_train.shape)
+    representative_indexs = np.random.choice(np.arange(len(X_train)), size=int(X_train.shape[0] * 0.7), replace=False)
+    representative_poses = X_train[representative_indexs]
     
-    model.save(experiment_folder / "model.h5")
+    apply_inte8_model_quantization(model, representative_poses, experiment_folder)
+    

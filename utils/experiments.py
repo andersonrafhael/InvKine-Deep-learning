@@ -1,9 +1,11 @@
 import json
 import numpy as np
 from pathlib import Path
-import matplotlib.pyplot as plt
-
+import subprocess as sp
 import argparse
+
+import tensorflow as tf
+
 
 def get_experiment_id(root_dir: str) -> int:
     """
@@ -32,8 +34,8 @@ def get_experiment_id(root_dir: str) -> int:
 
     return current_id
 
+
 def get_experiment_config(args: argparse.Namespace) -> dict:
-    
     experiment_config = {
         "training_config": {
             "epochs": args.epochs,
@@ -42,14 +44,16 @@ def get_experiment_config(args: argparse.Namespace) -> dict:
             "n_samples": args.n_samples,
         },
     }
-    
+
     return experiment_config
 
-def get_network_config(input_dim:int, output_dim:int, neuron_layers: list[int]) -> list[int]:
-    
+
+def get_network_config(
+    input_dim: int, output_dim: int, neuron_layers: list[int]
+) -> list[int]:
     """
     This function returns the network configuration.
-    
+
     Params:
     --------
     input_dim: int
@@ -58,13 +62,48 @@ def get_network_config(input_dim:int, output_dim:int, neuron_layers: list[int]) 
         output dimension of the network
     neuron_layers: list[int]
         list of neurons in each layer excluding the output layer
-        
+
     Returns:
     --------
     net_config: list[int]
         network configuration including the input and output dimensions
 
     """
-    
+
     net_config = [input_dim] + neuron_layers + [output_dim]
     return net_config
+
+
+def apply_inte8_model_quantization(
+    model: tf.keras.models.Sequential,
+    representative_pose: list[np.ndarray],
+    experiment_folder: Path,
+) -> None:
+    """
+    This function applies the int8 quantization to the model.
+
+    Params:
+    -------
+    model: tf.keras.sequential
+        model to be quantized
+    representative_pose: list[np.ndarray]
+        list of representative poses to be used for quantization
+    """
+    model.save(experiment_folder / "model.h5")
+
+    representative_pose = representative_pose.astype(np.float32)
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+
+    n = representative_pose.shape[1]
+    def representative_dataset_gen():
+        for pose in representative_pose:
+            yield [pose.reshape(1, n)]
+
+    converter.representative_dataset = representative_dataset_gen
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    tflite_quant_model = converter.convert()
+
+    open(experiment_folder / "model.tflite", "wb").write(tflite_quant_model)
+
+    sp.run(["xxd", "-i", f"{experiment_folder}/model.tflite", f"{experiment_folder}/model.cc"])
