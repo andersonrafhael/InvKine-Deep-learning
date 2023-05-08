@@ -16,7 +16,8 @@ from utils.experiments import (
     get_experiment_id,
     get_network_config,
     get_experiment_config,
-    apply_inte8_model_quantization
+    export_int8_model,
+    export_H_model
 )
 
 
@@ -128,7 +129,7 @@ if __name__ == "__main__":
     thetas = np.array(
         [
             np.random.uniform(low=low, high=high, size=args.n_samples)
-            for _, (low, high) in enumerate(angle_ranges)
+            for low, high in angle_ranges
         ]
     ).T
 
@@ -162,7 +163,7 @@ if __name__ == "__main__":
     )
 
     early_stop = tf.keras.callbacks.EarlyStopping(
-        monitor="loss", patience=10, min_delta=0.0001
+        monitor="loss", patience=5, min_delta=0.0001
     )
 
     history = model.fit(
@@ -195,5 +196,6 @@ if __name__ == "__main__":
     representative_indexs = np.random.choice(np.arange(len(X_train)), size=int(X_train.shape[0] * 0.7), replace=False)
     representative_poses = X_train[representative_indexs]
     
-    apply_inte8_model_quantization(model, representative_poses, experiment_folder)
+    # apply_inte8_model_quantization(model, representative_poses, experiment_folder)
+    export_H_model(model, experiment_folder)
     

@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 import subprocess as sp
 import argparse
-
+from tinymlgen import port
 import tensorflow as tf
 
 
@@ -74,7 +74,7 @@ def get_network_config(
     return net_config
 
 
-def apply_inte8_model_quantization(
+def export_int8_model(
     model: tf.keras.models.Sequential,
     representative_pose: list[np.ndarray],
     experiment_folder: Path,
@@ -107,3 +107,9 @@ def apply_inte8_model_quantization(
     open(experiment_folder / "model.tflite", "wb").write(tflite_quant_model)
 
     sp.run(["xxd", "-i", f"{experiment_folder}/model.tflite", f"{experiment_folder}/model.cc"])
+    
+    
+def export_H_model(model: tf.keras.models.Sequential, experiment_folder: Path):
+    model_h_format = port(model, pretty_print=True, variable_name='invkine_model')
+    with open(experiment_folder / "model.h", "w") as f:
+        f.write(model_h_format)
