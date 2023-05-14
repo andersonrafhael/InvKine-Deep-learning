@@ -1,32 +1,81 @@
 #include <EloquentTinyML.h>
-#include "invikine_model.h"
+#include <eloquent_tinyml/tensorflow.h>
 
-#define NUMBER_OF_INPUTS 3
-#define NUMBER_OF_OUTPUTS 2
-// in future projects you may need to tweek this value: it's a trial and error process
-#define TENSOR_ARENA_SIZE 5*1024
+#include "invkine_model.h"
 
-Eloquent::TinyML::TfLite<NUMBER_OF_INPUTS, NUMBER_OF_OUTPUTS, TENSOR_ARENA_SIZE> ml;
+// Input size
+#define INPUT_SIZE 3
 
+// Output size
+#define OUTPUT_SIZE 2
+
+// Create a TensorFlow model wrapper object
+Eloquent::TinyML::TensorFlow::AllOpsTensorFlow<INPUT_SIZE, OUTPUT_SIZE, invkine_model_len> tf;
 
 void setup() {
-    Serial.begin(115200);
-    ml.begin(invkine_model);
+  // Begin the TensorFlow model
+  Serial.begin(115200);
+  tf.begin(invkine_model);
+
+  float input_data[INPUT_SIZE] = {0.5, 2.3, -0.9};
+  float output_data[OUTPUT_SIZE] = { 0.0, 0.0 };
+  
+  tf.predict(input_data, output_data);
+
+  
+  Serial.print("Input: ");
+  for (int i = 0; i < INPUT_SIZE; i++) {
+    Serial.print(input_data[i]);
+    if (i < INPUT_SIZE - 1) {
+      Serial.print(", ");
+    }
+  }
+  Serial.println();
+
+  // Print the output data
+  Serial.print("Output: ");
+  for (int i = 0; i < OUTPUT_SIZE; i++) {
+    Serial.print(output_data[i]);
+    if (i < OUTPUT_SIZE - 1) {
+      Serial.print(", ");
+    }
+  }
 }
 
 void loop() {
-    // pick up a random x and predict its sine
-    float x = 3.14 * random(100) / 100;
-    float y = 3.14 * random(100) / 100;
-    float z = 3.14 * random(100) / 100;
 
-    float input[1] = { x, y, z };
-    float output[2] = {0, 0};
+  /*
+  // Input data
 
-    ml.predict(input, output);
+   //float x = 3.14 * random(100) / 100;
+   //float y = 3.14 * random(100) / 100;
+   //float z = 3.14 * random(100) / 100;
 
-    Serial.println("  Pose -> " + "x: " + String(x) + "y: " + String(y) + "z: " + String(z));
-    Serial.println("Thetas -> " + "theta0: " + String(output[0]) + "theta1: " + String(output[1]));
-    
-    delay(1000);
+  float input_data[INPUT_SIZE] = {0.5, 2.3, -0.9};
+
+  // Output data
+  float output_data[OUTPUT_SIZE] = { 0.0, 0.0 };
+
+  // Make a prediction using the input data
+  tf.predict(input_data, output_data);
+
+  
+  Serial.print("Input: ");
+  for (int i = 0; i < INPUT_SIZE; i++) {
+    Serial.print(input_data[i]);
+    if (i < INPUT_SIZE - 1) {
+      Serial.print(", ");
+    }
+  }
+  Serial.println();
+
+  // Print the output data
+  Serial.print("Output: ");
+  for (int i = 0; i < OUTPUT_SIZE; i++) {
+    Serial.print(output_data[i]);
+    if (i < OUTPUT_SIZE - 1) {
+      Serial.print(", ");
+    }
+  }
+  Serial.println();*/
 }
