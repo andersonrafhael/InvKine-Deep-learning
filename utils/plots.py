@@ -36,7 +36,7 @@ def plot_train_metrics(history: dict, experiment_folder: Path) -> None:
     plt.savefig(experiment_folder / "error.png")
     plt.close()
 
-def plot_xyz(X_train, X_test, experiment_folder: Path) -> None:
+def plot_xyz(X_train, X_test, experiment_folder: Path, filename: str="xyz_train_test") -> None:
     """
     This function plots the data distribuition.
 
@@ -70,5 +70,5 @@ def plot_xyz(X_train, X_test, experiment_folder: Path) -> None:
     plt.scatter(x2, z2, label="xz_test")
     plt.legend()
 
-    plt.savefig(experiment_folder / "xyz_train_test.png")
+    plt.savefig(experiment_folder / f"{filename}.png")
     plt.close()

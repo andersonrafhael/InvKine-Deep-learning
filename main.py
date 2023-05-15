@@ -17,7 +17,8 @@ from utils.experiments import (
     get_network_config,
     get_experiment_config,
     export_int8_model,
-    export_H_model
+    export_H_model,
+    export_using_everywhereml
 )
 
 
@@ -163,7 +164,7 @@ if __name__ == "__main__":
     )
 
     early_stop = tf.keras.callbacks.EarlyStopping(
-        monitor="loss", patience=5, min_delta=0.0001
+        monitor="loss", patience=5, min_delta=0.00001
     )
 
     history = model.fit(
@@ -172,7 +173,6 @@ if __name__ == "__main__":
         batch_size=args.bsize,
         epochs=args.epochs,
         validation_data=(X_test, y_test),
-        callbacks=[early_stop],
     )
 
     ### Plot model train metrics
@@ -192,10 +192,10 @@ if __name__ == "__main__":
     print(f"Position given by theta label {true_position}")
     print(f"Position given by theta pred  {pred_position}")
 
-    print(X_train.shape)
-    representative_indexs = np.random.choice(np.arange(len(X_train)), size=int(X_train.shape[0] * 0.7), replace=False)
-    representative_poses = X_train[representative_indexs]
+    # representative_indexs = np.random.choice(np.arange(len(X_train)), size=int(X_train.shape[0] * 0.7), replace=False)
+    # representative_poses = X_train[representative_indexs]
     
     # apply_inte8_model_quantization(model, representative_poses, experiment_folder)
     export_H_model(model, experiment_folder)
+    # export_using_everywhereml(model, X_train, y_train, experiment_folder)
     

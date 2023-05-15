@@ -44,11 +44,11 @@ class RobotPuma560:
 
         xyz = matrix_t[:-1, -1]
 
-        r20 = matrix_t[2, 0]
-        r21 = matrix_t[2, 1]
-        r22 = matrix_t[2, 2]
-        r10 = matrix_t[1, 0]
-        r00 = matrix_t[0, 0]
+        # r20 = matrix_t[2, 0]
+        # r21 = matrix_t[2, 1]
+        # r22 = matrix_t[2, 2]
+        # r10 = matrix_t[1, 0]
+        # r00 = matrix_t[0, 0]
 
         # print(f"\nr20 = DH TABLE[2,0] = {r20}")
         # print(f"r21 = DH TABLE[2,1] = {r21}")
@@ -56,9 +56,9 @@ class RobotPuma560:
         # print(f"r10 = DH TABLE[1,0] = {r10}")
         # print(f"r00 = DH TABLE[0,0] = {r00}\n\n")
 
-        pitch = np.arctan2(-r20, np.sqrt(r21**2 + r22**2))
-        roll = np.arctan2(r10 / np.cos(pitch), r00 / np.cos(pitch))
-        yaw = np.arctan2(r21 / np.cos(pitch), r22 / np.cos(pitch))
+        # pitch = np.arctan2(-r20, np.sqrt(r21**2 + r22**2))
+        # roll = np.arctan2(r10 / np.cos(pitch), r00 / np.cos(pitch))
+        # yaw = np.arctan2(r21 / np.cos(pitch), r22 / np.cos(pitch))
 
         # print("pitch = arcotan2(-r20, sqrt(r21^2 + r22^2))\n")
 
