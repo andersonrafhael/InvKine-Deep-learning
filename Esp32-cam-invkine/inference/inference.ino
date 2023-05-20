@@ -1,71 +1,37 @@
 #include <EloquentTinyML.h>
 #include <eloquent_tinyml/tensorflow.h>
-
 #include "invkine_model.h"
 
-// Input size
 #define INPUT_SIZE 3
-
-// Output size
 #define OUTPUT_SIZE 2
+#define BAUDRATE 115200
 
-// Create a TensorFlow model wrapper object
 Eloquent::TinyML::TensorFlow::AllOpsTensorFlow<INPUT_SIZE, OUTPUT_SIZE, invkine_model_len> tf;
 
 void setup() {
-  // Begin the TensorFlow model
-  Serial.begin(115200);
+  
+  Serial.begin(BAUDRATE);
   tf.begin(invkine_model);
-
+  
 }
-
 void loop() {
 
+    int i = 0;
+    float input_data[INPUT_SIZE];
+    float output_data[OUTPUT_SIZE];
+
+    if (Serial.available() > 0) {
+
+        String receivedString = Serial.readString(); 
+        char* token = strtok(const_cast<char*>(receivedString.c_str()), ",");
+        
+        while (token != NULL && i < INPUT_SIZE) {
+          input_data[i] = atof(token);
+          token = strtok(NULL, ",");
+          i++;
+        }
   
-  // Input data
-
-//    float x = 3.14 * random(100) / 100;
-//    float y = 3.14 * random(100) / 100;
-//    float z = 3.14 * random(100) / 100;
-
-  // float input_data[INPUT_SIZE] = {0.5, 2.3, -0.9};
-
-  // // Output data
-  // float output_data[OUTPUT_SIZE] = { 0.0, 0.0 };
-
-  // // Make a prediction using the input data
-  // tf.predict(input_data, output_data);
-
-  
-  // Serial.print("Input: ");
-  // for (int i = 0; i < INPUT_SIZE; i++) {
-  //   Serial.print(input_data[i]);
-  //   if (i < INPUT_SIZE - 1) {
-  //     Serial.print(", ");
-  //   }
-  // }
-  // Serial.println();
-
-  // // Print the output data
-  // Serial.print("Output: ");
-  // for (int i = 0; i < OUTPUT_SIZE; i++) {
-  //   Serial.print(output_data[i]);
-  //   if (i < OUTPUT_SIZE - 1) {
-  //     Serial.print(", ");
-  //   }
-  // }
-  // Serial.println();
-
-  while (Serial.available() < sizeof(float) * 3);
-
-  float input_data[INPUT_SIZE];
-  float output_data[OUTPUT_SIZE] = { 0.0, 0.0 };
-  Serial.readBytes((char *)input_data, sizeof(input_data));
-
-  tf.predict(input_data, output_data);
-
-  Serial.write((const uint8_t *)output_data, sizeof(output_data));
-// Send a newline character to separate responses
-  Serial.write('\n');
-  
+        tf.predict(input_data, output_data);
+        Serial.print(String(output_data[0]) + "," + String(output_data[1]));
+    }
 }

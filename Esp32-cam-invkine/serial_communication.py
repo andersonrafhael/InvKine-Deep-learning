@@ -1,35 +1,36 @@
 import serial
 import struct
 import argparse
+import time
+import random
 
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='Serial communication')
-    parser.add_argument('--port', type=str, default='COM5', help='Serial port')
+    parser.add_argument('--port', type=str, default='COM3', help='Serial port')
     parser.add_argument('--baudrate', type=int, default=115200, help='Baudrate')
     args = parser.parse_args()
     
-    serial_conn = serial.Serial()
-    serial_conn.baudrate = args.baudrate
-    serial_conn.port = args.port
-    serial_conn.open()
+    INPUT_SHAPE = 3
+    OUTPUT_SHAPE = 2
     
-    while True:
-        
-        # Perform computation using coordinates received from microcontroller
-        x, y, z = 1.0, 2.0, 3.0
-        coords = struct.pack('fff', x, y, z)
-        
-        # Pack the result as a float and send it to the microcontroller
-        serial_conn.write(coords)
-        
-        # Wait for and receive data from the microcontroller
-        response_bytes = serial_conn.readline()
-        
-        # Decode the received data and extract any values sent by the microcontroller
-        if response_bytes:
-            response_values = struct.unpack('ff', response_bytes)
-            print(response_values)
-    
-    
-    serial_conn.close()
+    esp32cam_serial = serial.Serial(port=args.port, baudrate=args.baudrate, timeout=1.0)
+    esp32cam_serial.setDTR(False)
+    esp32cam_serial.setRTS(False)
+
+    message = "1,2,3"
+    esp32cam_serial.write(message.encode())
+    data = esp32cam_serial.read_until("\n")
+    esp32cam_serial.flush()
+
+    try:
+        while True:
+            message = str(input("Enter message: "))
+            esp32cam_serial.write(message.encode())
+            time.sleep(0.00001)
+            data = esp32cam_serial.readline()
+            print(data)
+            
+    except KeyboardInterrupt:
+        esp32cam_serial.close()
+        print("Serial port closed") 
