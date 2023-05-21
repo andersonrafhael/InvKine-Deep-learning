@@ -21,7 +21,6 @@ class RobotPuma560:
         return T
 
     def fkine(self, theta, alpha, r, d, offset=np.array([0.0])):  # , 0, 0, 0, 0])):
-        
         # print(f"Thetas = {theta}")
         # print(f"alphas = {alpha}")
         # print(f"rs = {r}")

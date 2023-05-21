@@ -1,6 +1,6 @@
 import argparse
 import numpy as np
-from pprint import pprint
+import pandas as pd
 
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
@@ -16,16 +16,13 @@ from utils.experiments import (
     get_experiment_id,
     get_network_config,
     get_experiment_config,
-    export_int8_model,
     export_H_model,
-    export_using_everywhereml
 )
 
 
 def build_model(
     net_config: dict, experiment_config: dict, experiment_folder: str
 ) -> tf.keras.Sequential:
-    
     """
     This function builds the model based on the network configuration and saves the experiment configuration.
 
@@ -123,10 +120,9 @@ if __name__ == "__main__":
 
     # Puma560 angles rotations contraints
     # angle_ranges = np.array([(-np.pi, np.pi)])
-    angle_ranges = np.array([(0, np.pi), (0, np.pi)])
 
     # thethas = [theta_joint0, theta_joint1, theta_joint2, theta_joint3, theta_joint4, theta_joint5]
-
+    angle_ranges = np.array([(0, np.pi), (0, np.pi)])
     thetas = np.array(
         [
             np.random.uniform(low=low, high=high, size=args.n_samples)
@@ -142,6 +138,12 @@ if __name__ == "__main__":
         positions, thetas, test_size=0.2, random_state=42
     )
     plot_xyz(X_train, X_test, experiment_folder)
+
+    # saving teste data to run benchmark
+
+    pd.DataFrame(
+        np.hstack((X_test, y_test)), columns=["x", "y", "z", "theta0", "theta1"]
+    ).to_csv(experiment_folder / "test.csv", index=False)
 
     ### Build and train model
 
@@ -164,7 +166,7 @@ if __name__ == "__main__":
     )
 
     early_stop = tf.keras.callbacks.EarlyStopping(
-        monitor="loss", patience=5, min_delta=0.00001
+        monitor="loss", patience=5, min_delta=0.0001
     )
 
     history = model.fit(
@@ -192,10 +194,12 @@ if __name__ == "__main__":
     print(f"Position given by theta label {true_position}")
     print(f"Position given by theta pred  {pred_position}")
 
-    # representative_indexs = np.random.choice(np.arange(len(X_train)), size=int(X_train.shape[0] * 0.7), replace=False)
-    # representative_poses = X_train[representative_indexs]
+    """
+    #representative data to apply int8 quantization
     
+    representative_indexs = np.random.choice(np.arange(len(X_train)), size=int(X_train.shape[0] * 0.7), replace=False)
+    representative_poses = X_train[representative_indexs]
+    """
+
     # apply_inte8_model_quantization(model, representative_poses, experiment_folder)
     export_H_model(model, experiment_folder)
-    # export_using_everywhereml(model, X_train, y_train, experiment_folder)
-    

@@ -11,7 +11,6 @@ L2 = 0.15
 
 
 class KinLeg:
-
     def __init__(self):
         # create the Robot instance.
         self.robot = Supervisor()
@@ -39,17 +38,19 @@ class KinLeg:
         # L = np.sqrt(x*x + y*y + z*z)
         # L1L = (L1*L1 + L*L - L2*L2) / (2*L1*L)
         # L1L2 = (L1*L1 + L2*L2 - L*L) / (2*L1*L2)
-        
+
         thetas = model.predict(np.array([[x, y, z]]), verbose=0)[0]
-        
-        return np.array([
-            0,
-            # -np.arctan2(x, y),
-            # 0.5*np.pi - np.arccos(L1L) - np.arctan2(np.sqrt(x*x + y*y), z),
-            # 0.5*np.pi - np.arccos(L1L2),
-            thetas[0],
-            thetas[1]
-        ])
+
+        return np.array(
+            [
+                0,
+                # -np.arctan2(x, y),
+                # 0.5*np.pi - np.arccos(L1L) - np.arctan2(np.sqrt(x*x + y*y), z),
+                # 0.5*np.pi - np.arccos(L1L2),
+                thetas[0],
+                thetas[1],
+            ]
+        )
 
     def step(self):
         return self.robot.step(self.timestep)
@@ -61,21 +62,18 @@ def ball_position(ball_pos):
 
 
 if __name__ == "__main__":
-    
-    model = load_model("/home/andre-ubuntu/dev/InvKine-Deep-learning/output/model.tflite")
+    model = load_model(
+        "/home/andre-ubuntu/dev/InvKine-Deep-learning/output/model.tflite"
+    )
     kin_leg = KinLeg()
 
     ball = kin_leg.robot.getFromDef("BALL")
-    T01 = np.array(
-        kin_leg.robot.getFromDef("JOINT1").getPose()
-    ).reshape(4, 4)
+    T01 = np.array(kin_leg.robot.getFromDef("JOINT1").getPose()).reshape(4, 4)
     T10 = np.linalg.inv(T01)
 
     while kin_leg.step() != -1:
         ball_pos = ball.getField("translation").getSFVec3f()
-        ball_pos = np.array(
-            ball_pos + [1.]
-        ).reshape(4, 1)
+        ball_pos = np.array(ball_pos + [1.0]).reshape(4, 1)
         ball_pos = ball_position(ball_pos)
 
         q = kin_leg.invkine(model, *ball_pos[:-1])
