@@ -9,7 +9,7 @@ from everywhereml.code_generators.tensorflow import tf_porter
 
 def get_experiment_id(root_dir: str) -> int:
     """
-    This function returns the path of the next experiment to be saved.
+    This function returns the id where the experiment must be saved.
 
     Params:
     --------
