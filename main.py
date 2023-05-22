@@ -1,33 +1,32 @@
+import json
 import argparse
 import numpy as np
-from pprint import pprint
-
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+
+from keras.layers import Dense
+from keras.models import Sequential, save_model
 
 from sklearn.model_selection import train_test_split
-from robot import RobotPuma560
+from robot import Robot3DOF
 
-import json
 from pathlib import Path
 from utils.plots import plot_train_metrics, plot_xyz
+
 from utils.experiments import (
     get_experiment_id,
     get_network_config,
     get_experiment_config,
-    export_int8_model,
-    export_H_model,
-    export_using_everywhereml
+    export_H_model
 )
 
 
 def build_model(
     net_config: dict, experiment_config: dict, experiment_folder: str
 ) -> tf.keras.Sequential:
-    
+
     """
-    This function builds the model based on the network configuration and saves the experiment configuration.
+    This function builds the model based on the network configuration
+    and saves the experiment configuration.
 
     Params:
 
@@ -82,13 +81,16 @@ if __name__ == "__main__":
         help="hidden layers config to build neural network",
     )
     parser.add_argument(
-        "--epochs", type=int, default=5000, help="number of epochs to train the model"
+        "--epochs", type=int,
+        default=500, help="number of epochs to train the model"
     )
     parser.add_argument(
-        "--bsize", type=int, default=128, help="batch size to train the model"
+        "--bsize", type=int,
+        default=128, help="batch size to train the model"
     )
     parser.add_argument(
-        "--lrate", type=float, default=0.001, help="learning rate to train the model"
+        "--lrate", type=float,
+        default=0.001, help="learning rate to train the model"
     )
     parser.add_argument(
         "--n-samples",
@@ -106,26 +108,9 @@ if __name__ == "__main__":
 
     experiment_config = get_experiment_config(args)
 
-    # dh_table = np.array(
-    #     [
-    #         [np.pi / 2, -np.pi / 2, 0, 0.67183],
-    #         [0, 0, 0.43180, 0.13970],
-    #         [0, np.pi / 2, -0.02032, 0],
-    #         [0, -np.pi / 2, 0, 0.43180],
-    #         [0, np.pi / 2, 0, 0],
-    #         [0, 0, 0, 0.05650],
-    #     ]
-    # )
+    robot = Robot3DOF()
 
-    dh_table = np.array([[0.0, 0.0, 1, 0.0], [0.0, 0.0, 1, 0.0]])
-
-    robot = RobotPuma560(dh_table)
-
-    # Puma560 angles rotations contraints
-    # angle_ranges = np.array([(-np.pi, np.pi)])
-    angle_ranges = np.array([(0, np.pi), (0, np.pi)])
-
-    # thethas = [theta_joint0, theta_joint1, theta_joint2, theta_joint3, theta_joint4, theta_joint5]
+    angle_ranges = np.array([(0, np.pi), (0, np.pi), (0, np.pi)])
 
     thetas = np.array(
         [
@@ -134,7 +119,7 @@ if __name__ == "__main__":
         ]
     ).T
 
-    ### Generate, split and plot dataset
+    # Generate, split and plot dataset
 
     positions = np.array([robot.get_position(theta) for theta in thetas])
 
@@ -143,7 +128,7 @@ if __name__ == "__main__":
     )
     plot_xyz(X_train, X_test, experiment_folder)
 
-    ### Build and train model
+    # Build and train model
 
     model_config = get_network_config(
         positions.shape[1], thetas.shape[1], args.hidden_layers_config
@@ -175,10 +160,10 @@ if __name__ == "__main__":
         validation_data=(X_test, y_test),
     )
 
-    ### Plot model train metrics
+    # Plot model train metrics
     plot_train_metrics(history.history, experiment_folder)
 
-    ### Evaluate model
+    # Evaluate model
 
     model.evaluate(X_test, y_test)
     y_hat = model.predict(X_test[0].reshape(1, -1), verbose=0)[0]
@@ -192,10 +177,5 @@ if __name__ == "__main__":
     print(f"Position given by theta label {true_position}")
     print(f"Position given by theta pred  {pred_position}")
 
-    # representative_indexs = np.random.choice(np.arange(len(X_train)), size=int(X_train.shape[0] * 0.7), replace=False)
-    # representative_poses = X_train[representative_indexs]
-    
-    # apply_inte8_model_quantization(model, representative_poses, experiment_folder)
     export_H_model(model, experiment_folder)
-    # export_using_everywhereml(model, X_train, y_train, experiment_folder)
-    
+    save_model(model, experiment_folder / "model.h5")

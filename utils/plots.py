@@ -50,7 +50,7 @@ def plot_xyz(X_train, X_test, experiment_folder: Path, filename: str="xyz_train_
         path to save the plot
 
     """
-    
+
     x, y, z = X_train[:, -3], X_train[:, -2], X_train[:, -1]
     x2, y2, z2 = X_test[:, -3], X_test[:, -2], X_test[:, -1]
 
