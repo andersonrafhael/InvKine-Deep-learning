@@ -59,10 +59,11 @@ def get_esp32_prediction(pose_str: str, esp32cam_serial: serial.Serial) -> tuple
 
 if __name__ == "__main__":
     
-    parser = argparse.ArgumentParser(description="Serial communication")
+    parser = argparse.ArgumentParser(description="Esp32 Inference Benchmark")
     parser.add_argument("--port", type=str, default="COM3", help="Serial port")
     parser.add_argument("--baudrate", type=int, default=115200, help="Baudrate")
     parser.add_argument("--exp-id", type=int, default=0, help="Experiment id")
+    parser.add_argument("--timeout", type=float, default=1.0, help="Timeout to serial communication")
     args = parser.parse_args()
 
     INPUT_SHAPE = 3
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     
     test_data = pd.read_csv(f"runs/exp{args.exp_id}/test.csv")
 
-    esp32cam_serial = serial.Serial(port=args.port, baudrate=args.baudrate, timeout=1.0)
+    esp32cam_serial = serial.Serial(port=args.port, baudrate=args.baudrate, timeout=args.timeout)
     esp32cam_serial.setDTR(False)
     esp32cam_serial.setRTS(False)
     
@@ -85,7 +86,7 @@ if __name__ == "__main__":
         
     
     bench_csv = pd.DataFrame(bench_data, columns=["x", "y", "z", "theta0", "theta1", "theta0_pred", "theta1_pred", "time_pred"])
-    bench_csv.to_csv(f"runs/exp{args.exp_id}/benchmark.csv", index=False)
+    bench_csv.to_csv(f"runs/exp{args.exp_id}/esp32_bench.csv", index=False)
 
     print("Benchmark finished !!!")
     print("Benchmark results:")
