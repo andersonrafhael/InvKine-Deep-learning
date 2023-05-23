@@ -2,24 +2,20 @@
     "training_config": {
         "epochs": 500,
         "batch_size": 128,
-        "learning_rate": 0.002,
-        "n_samples": 100
+        "learning_rate": 0.005,
+        "n_samples": 200
     },
     "network_config": {
         "0": {
-            "units": 10,
+            "units": 16,
             "activation": "relu",
             "input_shape": 3
         },
         "2": {
-            "units": 30,
+            "units": 16,
             "activation": "relu"
         },
         "3": {
-            "units": 50,
-            "activation": "relu"
-        },
-        "4": {
             "units": 2,
             "activation": "linear"
         }
