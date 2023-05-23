@@ -27,14 +27,16 @@ def get_api_prediction(url:str, data: dict) -> tuple[float, list[float]]:
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description="Api inference Benchmark")
-    parser.add_argument("--exp-id", type=int, default=0, help="Experiment id")
+    parser.add_argument("--exp-id", type=str, default="3dof-64-64-64", help="Experiment id")
+    # parser.add_argument("--exp-id", type=int, default=0, help="Experiment id")
     args = parser.parse_args()
     
     URL = "https://invkine-model-fastapi-production.up.railway.app/inference"
-    test_data = pd.read_csv(f"runs/exp{args.exp_id}/test.csv")
+    test_data = pd.read_csv(f"results/{args.exp_id}/test.csv")
+    # test_data = pd.read_csv(f"runs/exp{args.exp_id}/test.csv")
     
     api_bench_data = []
-    for i, row in tqdm(test_data.iloc[:10,:].iterrows(), total=test_data.shape[0], desc="Running Api benchmark..."):
+    for i, row in tqdm(test_data.iloc[:100,:].iterrows(), total=test_data.shape[0], desc="Running Api benchmark..."):
         pose_str = ",".join([str(value) for value in row.values[:3]])
         data = {
             "x": float(row.values[0]),
@@ -43,7 +45,8 @@ if __name__ == "__main__":
         }
         
         api_time, api_thetas = get_api_prediction(URL, data)
-        api_bench_data.append([row.x, row.y, row.z, row.theta0, row.theta1, api_thetas["theta0"], api_thetas["theta1"], api_time])
+        api_bench_data.append(row.to_list() + list(api_thetas.values()) + [api_time])
         
-    api_bench_df = pd.DataFrame(api_bench_data, columns=["x", "y", "z", "theta0", "theta1", "theta0_pred", "theta1_pred", "time_pred"])
-    api_bench_df.to_csv(f"runs/exp{args.exp_id}/api_bench.csv", index=False)
+    api_bench_df = pd.DataFrame(api_bench_data, columns=["x", "y", "z", "theta0", "theta1", "theta2", "theta0_pred", "theta1_pred", "theta2_pred", "time_pred"])
+    api_bench_df.to_csv(f"results/{args.exp_id}/api_bench.csv", index=False)
+    # api_bench_df.to_csv(f"runs/exp{args.exp_id}/api_bench.csv", index=False)
