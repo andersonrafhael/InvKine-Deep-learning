@@ -1,7 +1,6 @@
 import numpy as np
 
 from robot import Robot3DOF
-from matplotlib import pyplot as plt
 from keras.models import load_model
 
 if __name__ == "__main__":
