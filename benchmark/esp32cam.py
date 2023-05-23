@@ -68,7 +68,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     INPUT_SHAPE = 3
-    OUTPUT_SHAPE = 2
+    OUTPUT_SHAPE = 3
     
     test_data = pd.read_csv(f"results/{args.exp_id}/test.csv")
     # test_data = pd.read_csv(f"runs/exp{args.exp_id}/test.csv")
@@ -79,18 +79,19 @@ if __name__ == "__main__":
     
     warmup_esp32cam_serial(esp32cam_serial)
     
+    n = 100
     bench_data = []    
-    for i, row in tqdm(test_data.iloc[:10, :].iterrows(), total=test_data.shape[0], desc="Running benchmark..."):
+    for i, row in tqdm(test_data.iloc[:n,:].iterrows(), total=n, desc="Running benchmark..."):
         
         pose_str = f"{row['x']},{row['y']},{row['z']}"
         time_pred, thetas_pred = get_esp32_prediction(pose_str, esp32cam_serial)
-        bench_data.append(row.to_list() + list(thetas_pred.values()) + [time_pred])
+        bench_data.append(row.to_list() + thetas_pred + [time_pred])
         
     
-    bench_csv = pd.DataFrame(bench_data, columns=["x", "y", "z", "theta0", "theta1", "theta2", "theta0_pred", "theta1_pred", "theta2_pred", "time_pred"])
+    bench_csv = pd.DataFrame(bench_data, columns=["x", "y", "z", "theta0", "theta1", "theta2","theta0_pred", "theta1_pred", "theta2_pred", "time_pred"])
     bench_csv.to_csv(f"results/{args.exp_id}/esp32_bench.csv", index=False)
-    # bench_csv.to_csv(f"runs/exp{args.exp_id}/esp32_bench.csv", index=False)
 
+    
     print("Benchmark finished !!!")
     print("Benchmark results:")
     print("------------------")

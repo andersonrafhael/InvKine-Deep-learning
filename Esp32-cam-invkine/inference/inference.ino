@@ -3,7 +3,7 @@
 #include "invkine_model.h"
 
 #define INPUT_SIZE 3
-#define OUTPUT_SIZE 2
+#define OUTPUT_SIZE 3
 #define BAUDRATE 115200
 
 Eloquent::TinyML::TensorFlow::AllOpsTensorFlow<INPUT_SIZE, OUTPUT_SIZE, invkine_model_len> tf;
@@ -32,6 +32,6 @@ void loop() {
         }
   
         tf.predict(input_data, output_data);
-        Serial.print(String(output_data[0]) + "," + String(output_data[1]));
+        Serial.print(String(output_data[0]) + "," + String(output_data[1]) + "," + String(output_data[2]));
     }
 }
