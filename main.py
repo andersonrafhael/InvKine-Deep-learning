@@ -77,7 +77,7 @@ if __name__ == "__main__":
         "--hidden-layers-config",
         type=int,
         nargs="+",
-        default=[16, 16],
+        default=[64, 64, 64],
         help="hidden layers config to build neural network",
     )
     parser.add_argument(
@@ -90,12 +90,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--lrate", type=float,
-        default=0.005, help="learning rate to train the model"
+        default=0.001, help="learning rate to train the model"
     )
     parser.add_argument(
         "--n-samples",
         type=int,
-        default=200,
+        default=50,
         help="number of samples to generate the dataset",
     )
     args = parser.parse_args()
@@ -110,22 +110,22 @@ if __name__ == "__main__":
 
     robot = Robot3DOF()
 
-    angle_ranges = np.array([(0, np.pi), (0, np.pi)])
+    angle_ranges = np.array([(0, np.pi), (0, np.pi), (0, np.pi)])
 
     n = args.n_samples
     theta1 = np.linspace(*angle_ranges[0], n)
     theta2 = np.linspace(*angle_ranges[1], n)
-    # theta3 = np.linspace(*angle_ranges[2], n)
+    theta3 = np.linspace(*angle_ranges[2], n)
 
     # Divides each interval in n parts and then generates n**2 samples
-    # thetas = np.array(np.meshgrid(theta1, theta2, theta3)).T.reshape(-1, 3)
-    thetas = np.array(np.meshgrid(theta1, theta2)).T.reshape(-1, 2)
+    thetas = np.array(np.meshgrid(theta1, theta2, theta3)).T.reshape(-1, 3)
+    # thetas = np.array(np.meshgrid(theta1, theta2)).T.reshape(-1, 2)
 
     # Generate, split and plot dataset
     positions = np.array([robot.get_position(theta) for theta in thetas])
 
     X_train, X_test, y_train, y_test = train_test_split(
-        positions, thetas, test_size=0.25, random_state=42
+        positions, thetas, test_size=0.35, random_state=42
     )
     plot_xyz(X_train, X_test, experiment_folder)
 

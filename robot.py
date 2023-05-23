@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 from roboticstoolbox import DHRobot, RevoluteDH
 
@@ -8,7 +7,7 @@ class Robot3DOF:
     def __init__(self) -> None:
         self.robot = DHRobot(
             [
-                # RevoluteDH(a=.1, alpha=-np.pi/2),
+                RevoluteDH(a=.1, alpha=-np.pi/2),
                 RevoluteDH(a=.1, alpha=0.),
                 RevoluteDH(a=.1, alpha=0.)
             ], name="Dummy3DOF"
@@ -17,7 +16,7 @@ class Robot3DOF:
     def show(self, qs, p):
         self.robot.plot(
             qs, limits=[-0.3, 0.3, -0.3, 0.3, -0.3, 0.3],
-            movie="inkine.gif"
+            movie="invkine.gif"
         )
 
     def fkine(self, q):

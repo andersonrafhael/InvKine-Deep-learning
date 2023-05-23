@@ -6,12 +6,12 @@ from keras.models import load_model
 
 if __name__ == "__main__":
     model = load_model(
-        "runs/exp17/model.h5"
+        "runs/exp2/model.h5"
     )
 
     robot = Robot3DOF()
 
-    angles = np.array([1.57, 1.57])
+    angles = np.array([1.57, 1.57, 1.57])
     position = robot.get_position(angles)
 
     pred_angles = model.predict(position.reshape(1, 3))[0]

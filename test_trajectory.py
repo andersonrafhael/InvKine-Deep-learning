@@ -6,13 +6,13 @@ from keras.models import load_model
 
 if __name__ == "__main__":
     model = load_model(
-        "runs/exp17/model.h5"
+        "runs/exp2/model.h5"
     )
 
     robot = Robot3DOF()
 
-    p0 = np.array([-0.1, 0.1, 0.])
-    dp = np.array([0., -0.1, 0.])
+    p0 = np.array([0., 0., -0.1])
+    dp = np.array([0., 0.,  0.1])
 
     # generate intermediate points between p0 and p1 = p0 + dp
     p1 = p0 + dp
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     plt.xlabel("time")
     plt.ylabel("joint angles")
 
-    pos = [robot.get_position(q) for q in Q]
+    pos = np.array([robot.get_position(q) for q in Q])
     # plot end-effector position
     plt.figure()
     plt.plot(pos, linewidth=2)
