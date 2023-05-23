@@ -36,7 +36,10 @@ def plot_train_metrics(history: dict, experiment_folder: Path) -> None:
     plt.savefig(experiment_folder / "error.png")
     plt.close()
 
-def plot_xyz(X_train, X_test, experiment_folder: Path, filename: str="xyz_train_test") -> None:
+
+def plot_xyz(
+    X_train, X_test, experiment_folder: Path, filename: str = "xyz_train_test"
+) -> None:
     """
     This function plots the data distribuition.
 

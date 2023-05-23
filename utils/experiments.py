@@ -9,7 +9,7 @@ from everywhereml.code_generators.tensorflow import tf_porter
 
 def get_experiment_id(root_dir: str) -> int:
     """
-    This function returns the path of the next experiment to be saved.
+    This function returns the id where the experiment must be saved.
 
     Params:
     --------
@@ -110,70 +110,18 @@ def export_int8_model(
     
     
 def export_H_model(model: tf.keras.models.Sequential, experiment_folder: Path):
+    
+    """
+    This function exports the model to a C header file.
+    
+    Parameters:
+    -----------
+    model: tf.keras.sequential
+        model to be exported
+    experiment_folder: Path
+        path to save the model
+    """
     model_h_format = port(model, pretty_print=True, variable_name='invkine_model')
     with open(experiment_folder / "invkine_model.h", "w") as f:
         f.write(model_h_format)
         
-
-def export_using_everywhereml(model:tf.keras.models.Sequential, Xtrain:np.ndarray, ytrain:np.ndarray, experiment_folder: Path):
-
-    porter = tf_porter(model, Xtrain, ytrain)
-    cpp_code = porter.to_cpp(instance_name='invkine_model', arena_size=4096)
-
-    with open(experiment_folder / "invikine_model.h", "w") as f:
-        f.write(cpp_code)
-        
-
-def export_to_MicroFlow(model: tf.keras.models.Sequential, experiment_folder: Path):
-    
-    filename = experiment_folder / "weights_and_biases.txt"
-    
-    weights = []
-    biases = []
-    for l in range(len(model.layers)):
-        W, B = model.layers[l].get_weights()
-        weights.append(W.flatten())
-        biases.append(B.flatten())
-    
-    z = []
-    b = []
-    for i in np.array(weights):
-        for l in i:
-            z.append(l)
-    for i in np.array(biases):
-        for l in i:
-            b.append(l)
-    with open(filename, "w") as f:
-      f.write("weights: {")
-      for i in range(len(z)):
-        if (i < len(z)-1):
-          f.write(str(z[i])+", ")
-        else:
-          f.write(str(z[i]))
-      f.write("}\n\n")
-
-      f.write("biases: {")
-      for i in range(len(b)):
-        if (i < len(b)-1):
-          f.write(str(b[i])+", ")
-        else:
-          f.write(str(b[i]))
-      f.write("}\n\n")
-    
-      arch = []
-    
-      arch.append(model.layers[0].input_shape[1])
-      for i in range(1, len(model.layers)):
-          arch.append(model.layers[i].input_shape[1])
-      arch.append(model.layers[len(model.layers)-1].output_shape[1])
-      f.write("Architecture: {")
-      for i in range(len(arch)):
-          if (i < len(arch)-1):
-              f.write(str(arch[i])+", ")
-          else:
-              f.write(str(arch[i]))
-      f.write("}")
-      print("Architecture (alpha):", arch)
-      print("Layers:", len(arch))
-    print("Weights: ", z)
-    print("Biases: ", b)

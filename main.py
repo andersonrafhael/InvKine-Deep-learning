@@ -23,7 +23,6 @@ from utils.experiments import (
 def build_model(
     net_config: dict, experiment_config: dict, experiment_folder: str
 ) -> tf.keras.Sequential:
-
     """
     This function builds the model based on the network configuration
     and saves the experiment configuration.
