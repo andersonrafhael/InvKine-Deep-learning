@@ -42,6 +42,7 @@ def get_experiment_config(args: argparse.Namespace) -> dict:
             "batch_size": args.bsize,
             "learning_rate": args.lrate,
             "n_samples": args.n_samples,
+            "test_size": args.test_size,
         },
     }
 

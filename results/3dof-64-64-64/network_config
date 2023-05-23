@@ -3,7 +3,8 @@
         "epochs": 500,
         "batch_size": 128,
         "learning_rate": 0.001,
-        "n_samples": 50
+        "n_samples": 50,
+        "test_size": 0.35
     },
     "network_config": {
         "0": {
