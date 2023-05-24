@@ -21,7 +21,9 @@ def get_api_prediction(url:str, data: dict) -> tuple[float, list[float]]:
     response = requests.post(url, json=data, headers={"Content-Type": "application/json"})
     end_time = time.time() - begin_time
     
-    return end_time, response.json()
+    result = response.json().copy()
+    time_pred = result.pop("time")
+    return end_time, result, time_pred
         
 
 if __name__ == "__main__":
@@ -44,9 +46,9 @@ if __name__ == "__main__":
             "z": float(row.values[2])
         }
         
-        api_time, api_thetas = get_api_prediction(URL, data)
-        api_bench_data.append(row.to_list() + list(api_thetas.values()) + [api_time])
+        api_time, api_thetas, time_pred = get_api_prediction(URL, data)
+        api_bench_data.append(row.to_list() + list(api_thetas.values()) + [api_time, time_pred])
         
-    api_bench_df = pd.DataFrame(api_bench_data, columns=["x", "y", "z", "theta0", "theta1", "theta2", "theta0_pred", "theta1_pred", "theta2_pred", "time_pred"])
+    api_bench_df = pd.DataFrame(api_bench_data, columns=["x", "y", "z", "theta0", "theta1", "theta2", "theta0_pred", "theta1_pred", "theta2_pred", "api_time", "time_pred"])
     api_bench_df.to_csv(f"results/{args.exp_id}/api_bench.csv", index=False)
     # api_bench_df.to_csv(f"runs/exp{args.exp_id}/api_bench.csv", index=False)
