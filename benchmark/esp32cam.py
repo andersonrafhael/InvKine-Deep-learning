@@ -36,7 +36,7 @@ def get_esp32_prediction(pose_str: str, esp32cam_serial: serial.Serial) -> tuple
     
     Returns:
     --------
-    prediction: tuple[float, list[float]]
+    prediction: tuple[float, list[float], float]
         tuple with the prediction time and the predicted theta values
     """
     
@@ -52,8 +52,8 @@ def get_esp32_prediction(pose_str: str, esp32cam_serial: serial.Serial) -> tuple
         esp32cam_serial.close()
         raise Exception("Error in serial communication, closing serial serial communication...")
         
-    thetas = [float(theta) for theta in data.split(",")]
-    return end_time, thetas
+    thetas = [float(theta) for theta in data.split(",")[:-1]]
+    return end_time, thetas, float(data.split(",")[-1]) * 10e-6
     
     
 
@@ -84,11 +84,12 @@ if __name__ == "__main__":
     for i, row in tqdm(test_data.iloc[:n,:].iterrows(), total=n, desc="Running benchmark..."):
         
         pose_str = f"{row['x']},{row['y']},{row['z']}"
-        time_pred, thetas_pred = get_esp32_prediction(pose_str, esp32cam_serial)
-        bench_data.append(row.to_list() + thetas_pred + [time_pred])
+        time_pred, thetas_pred, time_inf = get_esp32_prediction(pose_str, esp32cam_serial)
+        bench_data.append(row.to_list() + thetas_pred + [time_pred, time_inf])
         
     
-    bench_csv = pd.DataFrame(bench_data, columns=["x", "y", "z", "theta0", "theta1", "theta2","theta0_pred", "theta1_pred", "theta2_pred", "time_pred"])
+    bench_csv = pd.DataFrame(bench_data, columns=["x", "y", "z", "theta0", "theta1", "theta2","theta0_pred", "theta1_pred", "theta2_pred", "time_pred", "time_inf"])
+    
     bench_csv.to_csv(f"results/{args.exp_id}/esp32_bench.csv", index=False)
 
     

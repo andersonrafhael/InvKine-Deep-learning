@@ -30,8 +30,10 @@ void loop() {
           token = strtok(NULL, ",");
           i++;
         }
-  
+
+        unsigned long start_time = micros();
         tf.predict(input_data, output_data);
-        Serial.print(String(output_data[0]) + "," + String(output_data[1]) + "," + String(output_data[2]));
+        unsigned long end_time = micros() - start_time;
+        Serial.print(String(output_data[0]) + "," + String(output_data[1]) + "," + String(output_data[2]) + "," + String(end_time));
     }
 }
