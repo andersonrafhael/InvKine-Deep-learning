@@ -23,17 +23,17 @@ def plot_thetas_error(thetas: list[list[float]], thetas_pred: list[list[float]])
         plt.show()
     return
 
-def plot_time_prediction(times: list[float]):
+def plot_time_prediction(inf_times: list[float], pred_times: list[float]):
 
-    m = np.array(times).mean(axis=0)
+    m = [np.array(inf_times).mean(axis=0)] + [np.array(pred_times).mean(axis=0)]
 
     plt.figure(figsize=(10, 8))
     plt.title("Prediction time")
-    bp = plt.boxplot(times, labels=["time_pred"], showmeans=True)
+    bp = plt.boxplot([inf_times, pred_times], labels=["inf_times", "pred_times"], showmeans=True)
 
     for i, line in enumerate(bp['medians']):
         x, y = line.get_xydata()[1]
-        text = f' μ={m}'
+        text = f' μ={m[i]}'
         plt.annotate(text, xy=(x, y))
     plt.legend()
     plt.show()
@@ -57,8 +57,8 @@ def plot_time_comparison(apiTimes: list[float], espTimes: list[float]):
 def plot_bench(test_data: pd.DataFrame):
     thetas = [test_data["theta0"].values.tolist(), test_data["theta1"].values.tolist(), test_data["theta2"].values.tolist()]
     thetas_pred = [test_data["theta0_pred"].values.tolist(), test_data["theta1_pred"].values.tolist(), test_data["theta2_pred"].values.tolist()]
-    plot_thetas_comparison(thetas, thetas_pred)
-    plot_time_prediction(test_data["time_pred"].values.tolist())
+    # plot_thetas_comparison(thetas, thetas_pred)
+    plot_time_prediction(test_data["time_inf"].values.tolist(), test_data["time_pred"].values.tolist())
     return
 
 if __name__ == "__main__":
@@ -71,6 +71,6 @@ if __name__ == "__main__":
     test_dataAPI = pd.read_csv(f"results/{args.exp_id}/api_bench.csv")
     test_dataESP = pd.read_csv(f"results/{args.exp_id}/esp32_bench.csv")
 
-    # plot_bench(test_dataAPI)
+    plot_bench(test_dataAPI)
     # plot_bench(test_dataESP)
     plot_time_comparison(test_dataAPI["time_pred"].values.tolist(), test_dataESP["time_pred"].values.tolist())
